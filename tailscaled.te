@@ -1,5 +1,14 @@
-policy_module(tailscaled, 0.0.1)
+policy_module(tailscaled, 1.0.0)
 
+# NOTE:
+# What is going on with /var/lib/tailscaled
+
+# References,
+# https://wiki.gentoo.org/wiki/SELinux/Tutorials/Creating_a_daemon_domain
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/using_selinux/writing-a-custom-selinux-policy_using-selinux
+#
+#
+#
 #gen_require(`
     # type system_dbusd_t, root_t, bin_t, var_t, tmp_t, unconfined_t, initrc_t, fs_t, cgroup_t, var_lib_nfs_t, http_port_t, shell_exec_t, syslogd_t, setroubleshootd_t;
     # These are temporarily defined to allow access to OAS Manager.
@@ -18,22 +27,29 @@ policy_module(tailscaled, 0.0.1)
 
 type tailscaled_t;
 type tailscaled_exec_t;
-# Create a domain for a service started by init - defined in system/init.if
+# Create a domain for tailscaled service started by init - defined in system/init.if
 init_daemon_domain(tailscaled_t, tailscaled_exec_t)
-#domain_entry_file(tailscaled_t, tailscaled_exec_t)
-domain_entry_file_spec_domtrans(tailscaled_t, tailscaled_exec_t)
-# locallogin_domtrans(tailscaled_t)
-# remotelogin_domtrans(tailscaled_t)
+# Make the type tailscaled_exec_t usable as an entry point for the domain tailscaled_exec_t - defined in kernel/domain.if
+domain_entry_file(tailscaled_t, tailscaled_exec_t)
+# Why was the following added?
+# domain_entry_file_spec_domtrans(tailscaled_t, tailscaled_exec_t)
 
+# Type for systemd unit file type
 type tailscaled_unit_file_t;
-# Use this type for systemd unit file type
-# Automatically defines access for systemd files
+# Creates the file type used for Tailscale systemd unit files - defined in system/systemd.if
 systemd_unit_file(tailscaled_unit_file_t)
 
-type tailscale_t;
-type tailscale_exec_t;
-# Create a domain for application - defined in policy/modules/system/application.if
-application_domain(tailscale_t, tailscale_exec_t)
+########################################
+#
+# tailscaled local policy
+#
+
+# Allow tailscaled in tailscaled_t context to execute itself to run another instance
+# This is required when the child is execve'd with the parameter "be-child"
+allow tailscaled_t tailscaled_exec_t:file execute_no_trans;
+
+# Allow tailscaled in tailscaled_t context to execute /usr/bin/login which has a context of login_exec_t
+can_exec(tailscaled_t, login_exec_t)
 
 # Allow tailscaled to send and receive TCP traffic on generic network interfaces
 # corenet_tcp_sendrecv_generic_if(tailscaled_t)
@@ -48,13 +64,13 @@ iptables_domtrans(tailscaled_t)
 sysnet_domtrans_ifconfig(tailscaled_t)
 corenet_tcp_bind_generic_port(tailscaled_t)
 ps_process_pattern(tailscaled_t, domain)
-# auth_login_entry_type(tailscaled_t)
 corecmd_exec_bin(tailscaled_t)
 term_use_ptmx(tailscaled_t)
 term_login_pty(tailscaled_t)
 userdom_getattr_user_home_dirs(tailscaled_t)
 userdom_search_user_home_dirs(tailscaled_t)
 
+auth_login_entry_type(tailscaled_t)
 auth_login_pgm_domain(tailscaled_t)
 auth_read_shadow(tailscaled_t)
 optional_policy(`
