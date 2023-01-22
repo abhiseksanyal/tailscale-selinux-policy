@@ -1,0 +1,76 @@
+policy_module(tailscaled, 0.0.1)
+
+#gen_require(`
+    # type system_dbusd_t, root_t, bin_t, var_t, tmp_t, unconfined_t, initrc_t, fs_t, cgroup_t, var_lib_nfs_t, http_port_t, shell_exec_t, syslogd_t, setroubleshootd_t;
+    # These are temporarily defined to allow access to OAS Manager.
+    # Identify a more generic allow policy to get uid for running process.
+    # type chkpwd_t, crond_t, locate_t, logrotate_t, prelink_cron_system_t, prelink_t, readahead_t, sysstat_t, system_cronjob_t, semanage_t, setfiles_t, sshd_t;
+    # type postfix_pickup_t, udev_t, user_tmp_t;
+    # type rhsmcertd_t, systemd_tmpfiles_t, systemd_logind_t;
+    # type rpm_var_lib_t;
+    # role unconfined_r;
+#')
+
+########################################
+#
+# Declarations
+#
+
+type tailscaled_t;
+type tailscaled_exec_t;
+# Create a domain for a service started by init - defined in system/init.if
+init_daemon_domain(tailscaled_t, tailscaled_exec_t)
+#domain_entry_file(tailscaled_t, tailscaled_exec_t)
+domain_entry_file_spec_domtrans(tailscaled_t, tailscaled_exec_t)
+# locallogin_domtrans(tailscaled_t)
+# remotelogin_domtrans(tailscaled_t)
+
+type tailscaled_unit_file_t;
+# Use this type for systemd unit file type
+# Automatically defines access for systemd files
+systemd_unit_file(tailscaled_unit_file_t)
+
+type tailscale_t;
+type tailscale_exec_t;
+# Create a domain for application - defined in policy/modules/system/application.if
+application_domain(tailscale_t, tailscale_exec_t)
+
+# Allow tailscaled to send and receive TCP traffic on generic network interfaces
+# corenet_tcp_sendrecv_generic_if(tailscaled_t)
+tailscale_network_connection(tailscaled_t)
+# domain_can_mmap_files(tailscaled_t)
+# systemd_exec_notify(tailscaled_t)
+# systemd_notify_domtrans(tailscaled_t)
+#init_write_pid_socket(tailscaled_t)
+#init_dgram_send(tailscaled_t)
+#init_use_notify(tailscaled_t)
+iptables_domtrans(tailscaled_t)
+sysnet_domtrans_ifconfig(tailscaled_t)
+corenet_tcp_bind_generic_port(tailscaled_t)
+ps_process_pattern(tailscaled_t, domain)
+# auth_login_entry_type(tailscaled_t)
+corecmd_exec_bin(tailscaled_t)
+term_use_ptmx(tailscaled_t)
+term_login_pty(tailscaled_t)
+userdom_getattr_user_home_dirs(tailscaled_t)
+userdom_search_user_home_dirs(tailscaled_t)
+
+auth_login_pgm_domain(tailscaled_t)
+auth_read_shadow(tailscaled_t)
+optional_policy(`
+	unconfined_shell_domtrans(tailscaled_t)
+')
+#auth_use_pam(tailscaled_t)
+#auth_domtrans_chk_passwd(tailscaled_t)
+#auth_signal_chk_passwd(tailscaled_t)
+#auth_rw_login_records(tailscaled_t)
+
+
+
+# type=AVC msg=audit(1674306452.044:92911): avc:  denied  { setsched } for  pid=139224 comm="login" scontext=system_u:system_r:tailscaled_t:s0 tcontext=system_u:system_r:tailscaled_t:s0 tclass=process permissive=0
+# type=AVC msg=audit(1674306452.044:92912): avc:  denied  { getattr } for  pid=139224 comm="login" path="/dev/pts/5" dev="devpts" ino=8 scontext=system_u:system_r:tailscaled_t:s0 tcontext=system_u:object_r:devpts_t:s0 tclass=chr_file permissive=0
+# type=AVC msg=audit(1674306452.044:92913): avc:  denied  { write } for  pid=139224 comm="login" name="log" dev="devtmpfs" ino=36531 scontext=system_u:system_r:tailscaled_t:s0 tcontext=system_u:object_r:devlog_t:s0 tclass=sock_file permissive=0
+
+#auth_domtrans_login_program(tailscaled_t, login_exec_t)
+# domtrans_pattern(tailscaled_t, login_exec_t, login_t)
+

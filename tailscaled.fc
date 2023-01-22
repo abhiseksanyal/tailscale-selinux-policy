@@ -1,0 +1,21 @@
+# This is the Tailscale File Context (fc) file
+#
+# There are three fields in this file.
+# - The first is a regular expression used to map files/directories to file context.
+# - The second optional field is a file type field. If it does not exist, it indicates match all. 
+#   If it does exist it must be a dash '-' followed by the file type. A regular file would be --,
+#   a directory would be -d, a chr_file would be -c
+# - The third field is a specification of the files security context to be assigned which is done using
+#   the gen_context macro
+#
+# References,
+# - https://selinuxproject.org/page/NB_RefPolicy#gen_context_Macro
+# - https://danwalsh.livejournal.com/8707.html
+
+/usr/sbin/tailscaled					--  gen_context(system_u:object_r:tailscaled_exec_t, s0)
+/lib/systemd/system/tailscaled.service	--	gen_context(system_u:object_r:tailscaled_unit_file_t, s0)
+
+# TODO: Security Context for following files have not been generated
+# /etc/default/tailscaled
+# /usr/bin/tailscale
+# /var/cache/tailscale
