@@ -189,7 +189,7 @@ term_login_pty(tailscaled_t)
 allow tailscaled_t devpts_t:chr_file { read write_chr_file_perms setattr relabel_chr_file_perms };
 
 # Allow tailscaled_t to transition to the unconfined domain by executing a shell - defined in roles/unconfineduser.if
-# This is required when the user to login over SSH is unconfined (which is a typical case for most distributions)
+# This is required when the user that logs in over SSH, is unconfined (which is a typical use case in most cases)
 # Used in ssh.te, remotelogin.te, etc.
 optional_policy(`
 	unconfined_shell_domtrans(tailscaled_t)

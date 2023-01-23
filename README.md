@@ -6,7 +6,7 @@ SELinux policy for Tailscale
 
 # Supported features
 1. Service Start and Stop
-2. Tailscale SSH
+2. Tailscale SSH for unconfined users only
 
 # Steps to build
 ## Pre-requisites
