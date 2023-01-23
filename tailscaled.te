@@ -146,3 +146,17 @@ kernel_request_load_module(tailscaled_t)
 allow tailscaled_t self:tun_socket create;
 # Allow tailscaled_t to read and write to TUN/TAP virtual network device - defined in kernel/corenetwork.if
 corenet_rw_tun_tap_dev(tailscaled_t)
+
+
+
+# Allow tailscaled_t to create sockets to use for the netlink families - generic and route
+# These rules are part of wireguard as well. Ref - wireguard.te
+allow tailscaled_t self:netlink_generic_socket create_socket_perms;
+allow tailscaled_t self:netlink_route_socket create_netlink_socket_perms;
+
+# Allow tailscale daemon to create different types of sockets
+allow tailscaled_t self:tcp_socket create_stream_socket_perms;
+allow tailscaled_t self:udp_socket create_socket_perms;
+allow tailscaled_t self:unix_dgram_socket create_socket_perms;
+
+

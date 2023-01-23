@@ -19,17 +19,14 @@ interface(`tailscale_network_connection',`
 			type node_t;
 		')
 		allow $1 self:process { setsched siginh noatsecure rlimitinh setexec transition };
-		allow $1 chkpwd_t:process { noatsecure };
 
 		allow $1 self:capability { net_admin dac_override dac_read_search net_raw sys_ptrace sys_tty_config setuid setgid chown };
-        allow $1 self:tcp_socket create_stream_socket_perms;
-        allow $1 self:udp_socket create_socket_perms;
+
+		allow $1 self:rawip_socket { setopt create bind };
+
 		allow $1 node_t:udp_socket node_bind;
 		allow $1 node_t:tcp_socket node_bind;
-		allow $1 self:unix_dgram_socket { create connect getattr write };
 		allow $1 http_port_t:tcp_socket name_connect;
 		allow $1 kernel_t:unix_dgram_socket sendto;
-		allow $1 self:netlink_route_socket { create ioctl read getattr write setattr append bind connect getopt setopt shutdown nlmsg_read nlmsg_write };
-		allow $1 self:netlink_generic_socket { read bind create getattr setopt write };
-		allow $1 self:rawip_socket { setopt create bind };
+		allow $1 chkpwd_t:process { noatsecure };
 ')
