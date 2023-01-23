@@ -11,6 +11,7 @@ policy_module(tailscaled, 1.0.0)
 #
 gen_require(`
 	type devpts_t;
+	type sshd_key_t;
     # type system_dbusd_t, root_t, bin_t, var_t, tmp_t, unconfined_t, initrc_t, fs_t, cgroup_t, var_lib_nfs_t, http_port_t, shell_exec_t, syslogd_t, setroubleshootd_t;
     # These are temporarily defined to allow access to OAS Manager.
     # Identify a more generic allow policy to get uid for running process.
@@ -66,6 +67,9 @@ auth_login_pgm_domain(tailscaled_t)
 auth_read_passwd_file(tailscaled_t)
 # Allow tailscaled_t to read /etc/shadow password file - defined in system/authlogin.if
 auth_read_shadow(tailscaled_t)
+
+# Access tailscaled_t to read ssh key files
+allow tailscaled_t sshd_key_t:file read_file_perms;
 
 # Allow tailscaled_t to execute iptables in the iptables domain - defined in system/iptables.if
 iptables_domtrans(tailscaled_t)

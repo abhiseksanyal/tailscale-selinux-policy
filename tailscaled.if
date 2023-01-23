@@ -38,7 +38,7 @@ interface(`tailscale_network_connection',`
 			type init_t, init_var_run_t;
 			#type iptables_exec_t;
 			type node_t;
-			type sshd_key_t;
+#			type sshd_key_t;
 			# type devpts_t;
 		#	type local_login_t;
 #			type user_home_dir_t;
@@ -108,6 +108,4 @@ interface(`tailscale_network_connection',`
 
 #		allow $1 var_run_t:dir { add_name write remove_name };
 #		allow $1 var_run_t:sock_file { create setattr unlink };
-		# Access key files
-        allow $1 sshd_key_t:file read_file_perms;
 ')
