@@ -15,7 +15,6 @@ interface(`tailscale_network_connection',`
 		gen_require(`
 			type http_port_t;
 			type kernel_t;
-			type tun_tap_device_t;
 
 			type node_t;
 		')
@@ -33,7 +32,4 @@ interface(`tailscale_network_connection',`
 		allow $1 self:netlink_route_socket { create ioctl read getattr write setattr append bind connect getopt setopt shutdown nlmsg_read nlmsg_write };
 		allow $1 self:netlink_generic_socket { read bind create getattr setopt write };
 		allow $1 self:rawip_socket { setopt create bind };
-		# allow $1 unreserved_port_t:tcp_socket name_bind;
-		allow $1 tun_tap_device_t:chr_file { all_chr_file_perms };
-		allow $1 self:tun_socket create;
 ')

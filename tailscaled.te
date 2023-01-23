@@ -142,3 +142,7 @@ modutils_domtrans_kmod(tailscaled_t)
 # Allow tailscaled_t to request the kernel to load a module (tun) - defined in kernel/kernel.if
 kernel_request_load_module(tailscaled_t)
 
+# Allow tailscaled_t to create tun socket
+allow tailscaled_t self:tun_socket create;
+# Allow tailscaled_t to read and write to TUN/TAP virtual network device - defined in kernel/corenetwork.if
+corenet_rw_tun_tap_dev(tailscaled_t)
