@@ -1,0 +1,40 @@
+
+## <summary>policy for tailscaled</summary>
+
+########################################
+## <summary>
+##	Execute tailscaled_exec_t in the tailscaled domain.
+## </summary>
+## <param name="domain">
+## <summary>
+##	Domain allowed to transition.
+## </summary>
+## </param>
+#
+interface(`tailscaled_domtrans',`
+	gen_require(`
+		type tailscaled_t, tailscaled_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	domtrans_pattern($1, tailscaled_exec_t, tailscaled_t)
+')
+
+######################################
+## <summary>
+##	Execute tailscaled in the caller domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`tailscaled_exec',`
+	gen_require(`
+		type tailscaled_exec_t;
+	')
+
+	corecmd_search_bin($1)
+	can_exec($1, tailscaled_exec_t)
+')
