@@ -20,7 +20,7 @@ interface(`tailscale_network_connection',`
 			type system_dbusd_var_run_t, system_dbusd_t;
 			type var_lib_t;
 			type var_run_t;
-			type passwd_file_t;
+			# type passwd_file_t;
 			class dbus { send_msg };
 			type NetworkManager_t;
 			type cert_t;
@@ -32,14 +32,16 @@ interface(`tailscale_network_connection',`
 			#type iptables_exec_t;
 			type node_t;
 			type sshd_key_t;
-			type devpts_t;
+			# type devpts_t;
 		#	type local_login_t;
 #			type user_home_dir_t;
 		')
 #		allow $1 user_home_dir_t:dir getattr;
 # userdom_getattr_user_home_dirs(
 		# domtrans_pattern($1, login_exec_t, login_t);
-		allow $1 devpts_t:chr_file { open read write ioctl getattr setattr relabelfrom relabelto };
+
+		# allow $1 devpts_t:chr_file { open read write ioctl getattr setattr relabelfrom relabelto };
+
 		#allow $1 local_login_t:process { noatsecure rlimitinh };
 		allow $1 self:process { setsched siginh noatsecure rlimitinh setexec transition };
 		allow $1 chkpwd_t:process { noatsecure };
@@ -52,7 +54,7 @@ interface(`tailscale_network_connection',`
 		allow $1 cert_t:dir { search read open };
 		allow $1 cert_t:file { read open getattr };
 		allow $1 cert_t:lnk_file read;
-		allow $1 passwd_file_t:file { read open getattr };
+		# allow $1 passwd_file_t:file { read open getattr };
         allow $1 self:tcp_socket create_stream_socket_perms;
         allow $1 self:udp_socket create_socket_perms;
 		allow $1 node_t:udp_socket node_bind;
