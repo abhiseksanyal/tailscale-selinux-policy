@@ -14,8 +14,9 @@
 interface(`tailscale_network_connection',`
 		gen_require(`
 			type http_port_t, net_conf_t;
-			type proc_t, proc_net_t;
-			type sysctl_net_t;
+#			type proc_t;
+			type proc_net_t;
+#			type sysctl_net_t;
 			type sysfs_t;
 			type system_dbusd_var_run_t, system_dbusd_t;
 			type var_lib_t;
@@ -23,7 +24,7 @@ interface(`tailscale_network_connection',`
 			# type passwd_file_t;
 			class dbus { send_msg };
 			type NetworkManager_t;
-			type cert_t;
+#			type cert_t;
 			type kernel_t;
 			type tun_tap_device_t;
 			type kmod_exec_t;
@@ -51,9 +52,9 @@ interface(`tailscale_network_connection',`
 		#allow $1 iptables_exec_t:file { getattr execute };
 		allow $1 self:capability { net_admin dac_override dac_read_search net_raw sys_ptrace sys_tty_config setuid setgid chown };
 		allow $1 NetworkManager_t:dbus send_msg;
-		allow $1 cert_t:dir { search read open };
-		allow $1 cert_t:file { read open getattr };
-		allow $1 cert_t:lnk_file read;
+#		allow $1 cert_t:dir { search read open };
+#		allow $1 cert_t:file { read open getattr };
+#		allow $1 cert_t:lnk_file read;
 		# allow $1 passwd_file_t:file { read open getattr };
         allow $1 self:tcp_socket create_stream_socket_perms;
         allow $1 self:udp_socket create_socket_perms;
@@ -66,8 +67,8 @@ interface(`tailscale_network_connection',`
 		allow $1 net_conf_t:lnk_file read;
 		allow $1 proc_net_t:lnk_file read;
 		allow $1 proc_net_t:file { read open getattr };
-		allow $1 proc_t:file { read open };
-		allow $1 proc_t:dir read;
+#		allow $1 proc_t:file { read open };
+#		allow $1 proc_t:dir read;
 		allow $1 self:netlink_route_socket { create ioctl read getattr write setattr append bind connect getopt setopt shutdown nlmsg_read nlmsg_write };
 		allow $1 self:netlink_generic_socket { read bind create getattr setopt write };
 		allow $1 self:rawip_socket { setopt create bind };
@@ -85,8 +86,8 @@ interface(`tailscale_network_connection',`
 		allow $1 modules_dep_t:file { read open getattr map };
 		# allow $1 self:netlink_route_socket { create bind getattr setopt read write nlmsg_read nlmsg_write };
 # create ioctl read getattr write setattr append bind connect getopt setopt shutdown nlmsg_read nlmsg_write
-		allow $1 sysctl_net_t:dir { search getattr };
-		allow $1 sysctl_net_t:file { read open getattr };
+#		allow $1 sysctl_net_t:dir { search getattr };
+#		allow $1 sysctl_net_t:file { read open getattr };
 		allow $1 sysfs_t:file { read open getattr };
 		allow $1 sysfs_t:lnk_file read;
 		allow $1 system_dbusd_var_run_t:dir search;

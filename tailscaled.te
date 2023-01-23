@@ -90,6 +90,11 @@ term_login_pty(tailscaled_t)
 # Allow tailscaled_t to read and write to a generic pty type
 allow tailscaled_t devpts_t:chr_file { read write_chr_file_perms setattr relabel_chr_file_perms };
 
+# Allow tailscaled_t to read network sysctls - defined in kernel/kernel.if
+kernel_read_net_sysctls(tailscaled_t)
+
+# Allow tailscaled_t to read generic SSL certificates - defined in system/miscfiles.if
+miscfiles_read_generic_certs(tailscaled_t)
 
 optional_policy(`
 	unconfined_shell_domtrans(tailscaled_t)
