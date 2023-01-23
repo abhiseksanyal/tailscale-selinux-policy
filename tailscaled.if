@@ -22,8 +22,11 @@ interface(`tailscale_network_connection',`
 #			type system_dbusd_var_run_t;
 
 #			type system_dbusd_t;
-			type var_lib_t;
+#
+#			type var_lib_t;
+
 			type var_run_t;
+
 			# type passwd_file_t;
 #			class dbus { send_msg };
 #			type NetworkManager_t;
@@ -99,8 +102,10 @@ interface(`tailscale_network_connection',`
 
 #		allow $1 system_dbusd_t:unix_stream_socket connectto;
 #		allow $1 system_dbusd_t:dbus send_msg;
-		allow $1 var_lib_t:dir { write add_name create read };
-		allow $1 var_lib_t:file { getattr read write open };
+
+#		allow $1 var_lib_t:dir { write add_name create read };
+#		allow $1 var_lib_t:file { getattr read write open };
+
 		allow $1 var_run_t:dir { add_name write remove_name };
 		allow $1 var_run_t:sock_file { create setattr unlink };
 		# Access key files

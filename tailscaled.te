@@ -38,6 +38,10 @@ type tailscaled_unit_file_t;
 # Creates the file type used for Tailscale systemd unit files - defined in system/systemd.if
 systemd_unit_file(tailscaled_unit_file_t)
 
+# Type for /var/lib/tailscale directory file type
+type tailscale_var_lib_t;
+files_type(tailscale_var_lib_t)
+
 ########################################
 #
 # tailscaled local policy
@@ -117,7 +121,9 @@ optional_policy(`
 #auth_signal_chk_passwd(tailscaled_t)
 #auth_rw_login_records(tailscaled_t)
 
-
+# Allow tailscaled_t to manage the directory /var/lib/tailscale and the files in it which has a context of tailscale_var_lib_t
+manage_dirs_pattern(tailscaled_t, tailscale_var_lib_t, tailscale_var_lib_t)
+manage_files_pattern(tailscaled_t, tailscale_var_lib_t, tailscale_var_lib_t)
 
 # type=AVC msg=audit(1674306452.044:92911): avc:  denied  { setsched } for  pid=139224 comm="login" scontext=system_u:system_r:tailscaled_t:s0 tcontext=system_u:system_r:tailscaled_t:s0 tclass=process permissive=0
 # type=AVC msg=audit(1674306452.044:92912): avc:  denied  { getattr } for  pid=139224 comm="login" path="/dev/pts/5" dev="devpts" ino=8 scontext=system_u:system_r:tailscaled_t:s0 tcontext=system_u:object_r:devpts_t:s0 tclass=chr_file permissive=0
