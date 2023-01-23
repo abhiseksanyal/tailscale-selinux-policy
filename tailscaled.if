@@ -13,18 +13,15 @@
 #
 interface(`tailscale_network_connection',`
 		gen_require(`
-			type http_port_t, net_conf_t;
+			type http_port_t;
 			type kernel_t;
 			type tun_tap_device_t;
 
-			type init_t, init_var_run_t;
 			type node_t;
 		')
 		allow $1 self:process { setsched siginh noatsecure rlimitinh setexec transition };
 		allow $1 chkpwd_t:process { noatsecure };
 
-		allow $1 init_t:dir search;
-		allow $1 init_t:file { read open getattr };
 		allow $1 self:capability { net_admin dac_override dac_read_search net_raw sys_ptrace sys_tty_config setuid setgid chown };
         allow $1 self:tcp_socket create_stream_socket_perms;
         allow $1 self:udp_socket create_socket_perms;
@@ -33,13 +30,10 @@ interface(`tailscale_network_connection',`
 		allow $1 self:unix_dgram_socket { create connect getattr write };
 		allow $1 http_port_t:tcp_socket name_connect;
 		allow $1 kernel_t:unix_dgram_socket sendto;
-		allow $1 net_conf_t:file { getattr read open };
-		allow $1 net_conf_t:lnk_file read;
 		allow $1 self:netlink_route_socket { create ioctl read getattr write setattr append bind connect getopt setopt shutdown nlmsg_read nlmsg_write };
 		allow $1 self:netlink_generic_socket { read bind create getattr setopt write };
 		allow $1 self:rawip_socket { setopt create bind };
 		# allow $1 unreserved_port_t:tcp_socket name_bind;
 		allow $1 tun_tap_device_t:chr_file { all_chr_file_perms };
 		allow $1 self:tun_socket create;
-		allow $1 init_var_run_t:unix_dgram_socket { sendto write };
 ')
