@@ -15,6 +15,7 @@
 /usr/sbin/tailscaled					--  gen_context(system_u:object_r:tailscaled_exec_t, s0)
 /lib/systemd/system/tailscaled.service	--	gen_context(system_u:object_r:tailscaled_unit_file_t, s0)
 /var/lib/tailscale(/.*)?					gen_context(system_u:object_r:tailscale_var_lib_t, s0)
+/var/run/tailscale(/.*)?					gen_context(system_u:object_r:tailscale_var_run_t, s0)
 
 # TODO: Security Context for following files have not been generated
 # /etc/default/tailscaled

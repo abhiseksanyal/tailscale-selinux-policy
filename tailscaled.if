@@ -25,7 +25,7 @@ interface(`tailscale_network_connection',`
 #
 #			type var_lib_t;
 
-			type var_run_t;
+#			type var_run_t;
 
 			# type passwd_file_t;
 #			class dbus { send_msg };
@@ -106,8 +106,8 @@ interface(`tailscale_network_connection',`
 #		allow $1 var_lib_t:dir { write add_name create read };
 #		allow $1 var_lib_t:file { getattr read write open };
 
-		allow $1 var_run_t:dir { add_name write remove_name };
-		allow $1 var_run_t:sock_file { create setattr unlink };
+#		allow $1 var_run_t:dir { add_name write remove_name };
+#		allow $1 var_run_t:sock_file { create setattr unlink };
 		# Access key files
         allow $1 sshd_key_t:file read_file_perms;
 ')
