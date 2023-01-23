@@ -58,6 +58,7 @@ sudo restorecon -R /var/lib/tailscale
 sudo restorecon -R /var/run/tailscale
 ```
 This is required only once, until Tailscale is reinstalled
+
 NOTE: Ignore restorecon error, if it fails to find "/var/run/tailscale"
 
 ## 4 - Start Tailscale and check the context again
