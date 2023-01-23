@@ -27,7 +27,7 @@ This will create the policy file "tailscaled.pp"
 Environment tested on
 - Tailscale 1.34.2
 - Fedora 37
-- Kernel ?
+- Kernel 6.1.6-200.fc37.x86_64
 
 ## 1 - Check context of an unconfined Tailscale service
 ```shell
@@ -95,3 +95,7 @@ sudo restorecon -R /var/run/tailscale
 NOTE: Ignore restorecon error, if it fails to find "/var/run/tailscale"
 
 4. Start tailscale service 
+
+# Troubleshooting
+
+Ref - https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/using_selinux/troubleshooting-problems-related-to-selinux_using-selinux

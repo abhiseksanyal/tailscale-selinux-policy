@@ -2,8 +2,10 @@ policy_module(tailscaled, 1.0.0)
 
 # References,
 # https://wiki.gentoo.org/wiki/SELinux/Tutorials/Creating_a_daemon_domain
+# https://wiki.gentoo.org/wiki/SELinux/Tutorials/How_does_a_process_get_into_a_certain_context
 # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/using_selinux/writing-a-custom-selinux-policy_using-selinux
 # https://selinuxproject.org/page/ObjectClassesPerms
+# https://selinuxproject.org/page/NB_Domain_and_Object_Transitions
 # https://danwalsh.livejournal.com/51435.html
 # https://fedoraproject.org/wiki/SELinux/Unsound_or_dangerous_SELinux_policy_practices
 
