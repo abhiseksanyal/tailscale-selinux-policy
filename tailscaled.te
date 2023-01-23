@@ -90,8 +90,21 @@ term_login_pty(tailscaled_t)
 # Allow tailscaled_t to read and write to a generic pty type
 allow tailscaled_t devpts_t:chr_file { read write_chr_file_perms setattr relabel_chr_file_perms };
 
+# Allow tailscaled_t to read the network state information - defined in kernel/kernel.if
+kernel_read_network_state(tailscaled_t)
 # Allow tailscaled_t to read network sysctls - defined in kernel/kernel.if
 kernel_read_net_sysctls(tailscaled_t)
+# Allow tailscaled_t to read hardware state information from /sysfs - defined in kernel/devices.if
+dev_read_sysfs(tailscaled_t)
+
+# Allow tailscaled_t to send a message on the system DBUS - defined in contrib/dbus.if
+dbus_send_system_bus(tailscaled_t)
+# Allow tailscaled_t to connect to session bus types with a unix stream socket - defined in contrib/dbus.if
+dbus_stream_connect_system_dbusd(tailscaled_t)
+# Allow tailscaled_t to read DBUS pid files - defined in contrib/dbus.if
+dbus_read_pid_files(tailscaled_t)
+# Allow tailscaled_t to send and receive messages from NetworkManager over DBUS - defined in contrib/networkmanager.if
+networkmanager_dbus_chat(tailscaled_t)
 
 # Allow tailscaled_t to read generic SSL certificates - defined in system/miscfiles.if
 miscfiles_read_generic_certs(tailscaled_t)
