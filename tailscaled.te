@@ -1,15 +1,12 @@
 policy_module(tailscaled, 1.0.0)
 
-# NOTE:
-# What is going on with /var/lib/tailscaled
-
 # References,
 # https://wiki.gentoo.org/wiki/SELinux/Tutorials/Creating_a_daemon_domain
 # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/using_selinux/writing-a-custom-selinux-policy_using-selinux
 # https://selinuxproject.org/page/ObjectClassesPerms
-#
-#
-#
+# https://danwalsh.livejournal.com/51435.html
+# https://fedoraproject.org/wiki/SELinux/Unsound_or_dangerous_SELinux_policy_practices
+
 gen_require(`
 	type devpts_t;
 	type sshd_key_t;
@@ -45,24 +42,44 @@ files_type(tailscale_var_run_t)
 # tailscaled local policy
 #
 
+# Section 1 - Stars here
+# Covers policy for interaction between tailscale binaries and its files
+
 # Allow tailscaled in tailscaled_t context to execute itself to run another instance
 # This is required when the child is execve'd with the parameter "be-child"
 allow tailscaled_t tailscaled_exec_t:file execute_no_trans;
 
-# Allow tailscaled in tailscaled_t context to execute /usr/bin/login which has a context of login_exec_t
-can_exec(tailscaled_t, login_exec_t)
-# Make tailscaled_t context an entry point for auth login programs like /usr/bin/login
-auth_login_entry_type(tailscaled_t)
-# Make tailscaled_t a domain that is used for a login program (/usr/bin/login) - defined in system/authlogin.if
-auth_login_pgm_domain(tailscaled_t)
+# Allow tailscaled_t to manage /var/lib/tailscale and the files in it which has a context of tailscale_var_lib_t
+manage_dirs_pattern(tailscaled_t, tailscale_var_lib_t, tailscale_var_lib_t)
+manage_files_pattern(tailscaled_t, tailscale_var_lib_t, tailscale_var_lib_t)
+# Allow tailscaled_t to manage /var/run/tailscale and the regular files, symlinks and socket files which has a context of tailscale_var_run_t
+manage_files_pattern(tailscaled_t, tailscale_var_run_t, tailscale_var_run_t)
+manage_dirs_pattern(tailscaled_t, tailscale_var_run_t, tailscale_var_run_t)
+manage_sock_files_pattern(tailscaled_t, tailscale_var_run_t, tailscale_var_run_t)
+manage_lnk_files_pattern(tailscaled_t, tailscale_var_run_t, tailscale_var_run_t)
 
-# Allow tailscaled_t to read /etc/passwd password file - defined in system/authlogin.if
-auth_read_passwd_file(tailscaled_t)
-# Allow tailscaled_t to read /etc/shadow password file - defined in system/authlogin.if
-auth_read_shadow(tailscaled_t)
+# Section 1 - Ends here
 
-# Access tailscaled_t to read ssh key files
-allow tailscaled_t sshd_key_t:file read_file_perms;
+# Section 2 - Starts here
+# Covers policy for capabilities given to tailscale
+
+allow tailscaled_t self:process { transition setexec setsched };
+# allow $1 self:process { setsched siginh noatsecure rlimitinh setexec transition };
+# Allow tailscaled_t to use net_admin capabilities. Required when the daemon starts
+allow tailscaled_t self:capability { net_admin };
+# Allow tailscaled_t to use sensitive DAC capabilities. Required when SSH is attempted
+allow tailscaled_t self:capability { dac_read_search dac_override };
+# Allow tailscaled_t to configure tty devices. Required when login is being setup after SSH
+allow tailscaled_t self:capability { sys_tty_config };
+# Allow tailscaled_t to setgid. Required when login is being setup after SSH
+allow tailscaled_t self:capability { setgid };
+# Allow tailscaled_t capabilities required when login is setup after SSH and before shell is spawned
+allow tailscaled_t self:capability { setuid chown fowner fsetid };
+
+# Section 2 - Ends here
+
+# Section 3 - Starts here
+# Covers policy for permissions given to tailscale to read, write and execute binaries
 
 # Allow tailscaled_t to execute iptables in the iptables domain - defined in system/iptables.if
 iptables_domtrans(tailscaled_t)
@@ -70,29 +87,12 @@ iptables_domtrans(tailscaled_t)
 # Allow tailscaled_t to execute ifconfig in the ifconfig domain - defined in system/sysnetwork.if
 sysnet_domtrans_ifconfig(tailscaled_t)
 
-# Allow tailscaled_t to get attributes of user home directories - defined in system/userdom.if
-userdom_getattr_user_home_dirs(tailscaled_t)
-# Allow tailscaled_t to search user home directories - defined in system/userdom.if
-userdom_search_user_home_dirs(tailscaled_t)
-
-# Allow tailscaled to send and receive TCP traffic on generic network interfaces
-# corenet_tcp_sendrecv_generic_if(tailscaled_t)
-tailscale_network_connection(tailscaled_t)
-# domain_can_mmap_files(tailscaled_t)
-# systemd_exec_notify(tailscaled_t)
-# systemd_notify_domtrans(tailscaled_t)
-#init_write_pid_socket(tailscaled_t)
-#init_dgram_send(tailscaled_t)
-#init_use_notify(tailscaled_t)
+# Allow tailscaled_t to list all the processes on the system - defined in support/misc_patterns.spt
+# Ref - https://danwalsh.livejournal.com/51435.html
 ps_process_pattern(tailscaled_t, domain)
-corecmd_exec_bin(tailscaled_t)
 
-# Allow tailscaled_t to read and write the pty multiplexor (/dev/ptmx) - defined in kernel/terminal.if
-term_use_ptmx(tailscaled_t)
-# Transform tailscaled_t into a pty type used by a login programs, like sshd - defined in kernel/terminal.if 
-term_login_pty(tailscaled_t)
-# Allow tailscaled_t to read and write to a generic pty type
-allow tailscaled_t devpts_t:chr_file { read write_chr_file_perms setattr relabel_chr_file_perms };
+# Allow tailscaled_t to execute generic programs in bin directory without a domain transition - defined in kernel/corecommands.if
+corecmd_exec_bin(tailscaled_t)
 
 # Allow tailscaled_t to read the network state information - defined in kernel/kernel.if
 kernel_read_network_state(tailscaled_t)
@@ -101,35 +101,22 @@ kernel_read_net_sysctls(tailscaled_t)
 # Allow tailscaled_t to read hardware state information from /sysfs - defined in kernel/devices.if
 dev_read_sysfs(tailscaled_t)
 
+# Allow tailscaled_t to read generic SSL certificates - defined in system/miscfiles.if
+miscfiles_read_generic_certs(tailscaled_t)
+
+# Section 3 - Ends here
+
+# Section 4 - Starts here
+# Covers policy for permissions given to tailscale to create sockets, read and write data to sockets
+
+# Allow tailscaled_t to read DBUS pid files - defined in contrib/dbus.if
+dbus_read_pid_files(tailscaled_t)
 # Allow tailscaled_t to send a message on the system DBUS - defined in contrib/dbus.if
 dbus_send_system_bus(tailscaled_t)
 # Allow tailscaled_t to connect to session bus types with a unix stream socket - defined in contrib/dbus.if
 dbus_stream_connect_system_dbusd(tailscaled_t)
-# Allow tailscaled_t to read DBUS pid files - defined in contrib/dbus.if
-dbus_read_pid_files(tailscaled_t)
 # Allow tailscaled_t to send and receive messages from NetworkManager over DBUS - defined in contrib/networkmanager.if
 networkmanager_dbus_chat(tailscaled_t)
-
-# Allow tailscaled_t to read generic SSL certificates - defined in system/miscfiles.if
-miscfiles_read_generic_certs(tailscaled_t)
-
-optional_policy(`
-	unconfined_shell_domtrans(tailscaled_t)
-')
-#auth_use_pam(tailscaled_t)
-#auth_domtrans_chk_passwd(tailscaled_t)
-#auth_signal_chk_passwd(tailscaled_t)
-#auth_rw_login_records(tailscaled_t)
-
-# Allow tailscaled_t to manage /var/lib/tailscale and the files in it which has a context of tailscale_var_lib_t
-manage_dirs_pattern(tailscaled_t, tailscale_var_lib_t, tailscale_var_lib_t)
-manage_files_pattern(tailscaled_t, tailscale_var_lib_t, tailscale_var_lib_t)
-
-# Allow tailscaled_t to manage /var/run/tailscale and the regular files, symlinks and socket files which has a context of tailscale_var_run_t
-manage_files_pattern(tailscaled_t, tailscale_var_run_t, tailscale_var_run_t)
-manage_dirs_pattern(tailscaled_t, tailscale_var_run_t, tailscale_var_run_t)
-manage_sock_files_pattern(tailscaled_t, tailscale_var_run_t, tailscale_var_run_t)
-manage_lnk_files_pattern(tailscaled_t, tailscale_var_run_t, tailscale_var_run_t)
 
 # Allow tailscaled_t to search the contents of kernel module directories
 files_search_kernel_modules(tailscaled_t)
@@ -146,17 +133,6 @@ kernel_request_load_module(tailscaled_t)
 allow tailscaled_t self:tun_socket create;
 # Allow tailscaled_t to read and write to TUN/TAP virtual network device - defined in kernel/corenetwork.if
 corenet_rw_tun_tap_dev(tailscaled_t)
-
-# Allow tailscaled_t to use net_admin capabilities. Required when the daemon starts
-allow tailscaled_t self:capability { net_admin };
-# Allow tailscaled_t to use sensitive DAC capabilities. Required when SSH is attempted
-allow tailscaled_t self:capability { dac_read_search };
-# Allow tailscaled_t to configure tty devices. Required when login is being setup after SSH
-allow tailscaled_t self:capability { sys_tty_config };
-# Allow tailscaled_t to setgid. Required when login is being setup after SSH
-allow tailscaled_t self:capability { setgid };
-# Allow tailscaled_t to setuid. Required when login is setup after SSH and before shell is spawned
-allow tailscaled_t self:capability { setuid };
 
 # Allow tailscaled_t to create sockets to use for the netlink families - generic and route
 # These rules are part of wireguard as well. Ref - wireguard.te
@@ -177,3 +153,44 @@ corenet_tcp_connect_http_port(tailscaled_t)
 
 # Allow tailscaled_t to send messages to Send messages to kernel unix datagram sockets - defined in kernel/kernel.if
 kernel_dgram_send(tailscaled_t)
+
+# Section 4 - Ends here
+
+# Section 5 - Starts here
+# Covers policy for login over SSH to succeed
+
+# Allow tailscaled in tailscaled_t context to execute /usr/bin/login which has a context of login_exec_t
+can_exec(tailscaled_t, login_exec_t)
+# Make tailscaled_t context an entry point for auth login programs like /usr/bin/login
+auth_login_entry_type(tailscaled_t)
+# Make tailscaled_t a domain that is used for a login program (/usr/bin/login) - defined in system/authlogin.if
+auth_login_pgm_domain(tailscaled_t)
+
+# Allow tailscaled_t to get attributes of user home directories - defined in system/userdom.if
+userdom_getattr_user_home_dirs(tailscaled_t)
+# Allow tailscaled_t to search user home directories - defined in system/userdom.if
+userdom_search_user_home_dirs(tailscaled_t)
+
+# Allow tailscaled_t to read /etc/passwd password file - defined in system/authlogin.if
+auth_read_passwd_file(tailscaled_t)
+# Allow tailscaled_t to read /etc/shadow password file - defined in system/authlogin.if
+auth_read_shadow(tailscaled_t)
+
+# Access tailscaled_t to read ssh key files
+allow tailscaled_t sshd_key_t:file read_file_perms;
+
+# Allow tailscaled_t to read and write the pty multiplexor (/dev/ptmx) - defined in kernel/terminal.if
+term_use_ptmx(tailscaled_t)
+# Transform tailscaled_t into a pty type used by a login programs, like sshd - defined in kernel/terminal.if 
+term_login_pty(tailscaled_t)
+# Allow tailscaled_t to read and write to a generic pty type
+allow tailscaled_t devpts_t:chr_file { read write_chr_file_perms setattr relabel_chr_file_perms };
+
+# Allow tailscaled_t to transition to the unconfined domain by executing a shell - defined in roles/unconfineduser.if
+# This is required when the user to login over SSH is unconfined (which is a typical case for most distributions)
+# Used in ssh.te, remotelogin.te, etc.
+optional_policy(`
+	unconfined_shell_domtrans(tailscaled_t)
+')
+
+# Section 5 - Ends here

@@ -1,27 +1,40 @@
-## <summary>Policy for network configuration: tailscale server and client.</summary>
-#
+
+## <summary>policy for tailscaled</summary>
+
 ########################################
 ## <summary>
-##      Perform network connections.
+##	Execute tailscaled_exec_t in the tailscaled domain.
 ## </summary>
 ## <param name="domain">
-##      <summary>
-##      Domain allowed access.
-##      </summary>
+## <summary>
+##	Domain allowed to transition.
+## </summary>
 ## </param>
-## <rolecap/>
 #
-interface(`tailscale_network_connection',`
-		#gen_require(`
-		#	type kernel_t;
+interface(`tailscaled_domtrans',`
+	gen_require(`
+		type tailscaled_t, tailscaled_exec_t;
+	')
 
-		#')
-		allow $1 self:process { setsched siginh noatsecure rlimitinh setexec transition };
+	corecmd_search_bin($1)
+	domtrans_pattern($1, tailscaled_exec_t, tailscaled_t)
+')
 
-		# allow $1 self:capability { net_admin dac_override dac_read_search net_raw sys_ptrace sys_tty_config setuid setgid chown };
+######################################
+## <summary>
+##	Execute tailscaled in the caller domain.
+## </summary>
+## <param name="domain">
+##	<summary>
+##	Domain allowed access.
+##	</summary>
+## </param>
+#
+interface(`tailscaled_exec',`
+	gen_require(`
+		type tailscaled_exec_t;
+	')
 
-		#allow $1 self:rawip_socket { setopt create bind };
-
-		#allow $1 kernel_t:unix_dgram_socket sendto;
-		#allow $1 chkpwd_t:process { noatsecure };
+	corecmd_search_bin($1)
+	can_exec($1, tailscaled_exec_t)
 ')
