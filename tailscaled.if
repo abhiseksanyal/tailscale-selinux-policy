@@ -14,55 +14,18 @@
 interface(`tailscale_network_connection',`
 		gen_require(`
 			type http_port_t, net_conf_t;
-#			type proc_t;
-#			type proc_net_t;
-#			type sysctl_net_t;
-#			type sysfs_t;
-#
-#			type system_dbusd_var_run_t;
-
-#			type system_dbusd_t;
-#
-#			type var_lib_t;
-
-#			type var_run_t;
-
-			# type passwd_file_t;
-#			class dbus { send_msg };
-#			type NetworkManager_t;
-#			type cert_t;
 			type kernel_t;
 			type tun_tap_device_t;
-#			type kmod_exec_t;
 
-#			type modules_dep_t, modules_conf_t, modules_object_t;
 			type init_t, init_var_run_t;
-			#type iptables_exec_t;
 			type node_t;
-#			type sshd_key_t;
-			# type devpts_t;
-		#	type local_login_t;
-#			type user_home_dir_t;
 		')
-#		allow $1 user_home_dir_t:dir getattr;
-# userdom_getattr_user_home_dirs(
-		# domtrans_pattern($1, login_exec_t, login_t);
-
-		# allow $1 devpts_t:chr_file { open read write ioctl getattr setattr relabelfrom relabelto };
-
-		#allow $1 local_login_t:process { noatsecure rlimitinh };
 		allow $1 self:process { setsched siginh noatsecure rlimitinh setexec transition };
 		allow $1 chkpwd_t:process { noatsecure };
 
 		allow $1 init_t:dir search;
 		allow $1 init_t:file { read open getattr };
-		#allow $1 iptables_exec_t:file { getattr execute };
 		allow $1 self:capability { net_admin dac_override dac_read_search net_raw sys_ptrace sys_tty_config setuid setgid chown };
-#		allow $1 NetworkManager_t:dbus send_msg;
-#		allow $1 cert_t:dir { search read open };
-#		allow $1 cert_t:file { read open getattr };
-#		allow $1 cert_t:lnk_file read;
-		# allow $1 passwd_file_t:file { read open getattr };
         allow $1 self:tcp_socket create_stream_socket_perms;
         allow $1 self:udp_socket create_socket_perms;
 		allow $1 node_t:udp_socket node_bind;
@@ -72,10 +35,6 @@ interface(`tailscale_network_connection',`
 		allow $1 kernel_t:unix_dgram_socket sendto;
 		allow $1 net_conf_t:file { getattr read open };
 		allow $1 net_conf_t:lnk_file read;
-#		allow $1 proc_net_t:lnk_file read;
-#		allow $1 proc_net_t:file { read open getattr };
-#		allow $1 proc_t:file { read open };
-#		allow $1 proc_t:dir read;
 		allow $1 self:netlink_route_socket { create ioctl read getattr write setattr append bind connect getopt setopt shutdown nlmsg_read nlmsg_write };
 		allow $1 self:netlink_generic_socket { read bind create getattr setopt write };
 		allow $1 self:rawip_socket { setopt create bind };
@@ -83,32 +42,4 @@ interface(`tailscale_network_connection',`
 		allow $1 tun_tap_device_t:chr_file { all_chr_file_perms };
 		allow $1 self:tun_socket create;
 		allow $1 init_var_run_t:unix_dgram_socket { sendto write };
-		# allow $1 init_var_run_t:sock_file { all_sock_file_perms };
-		# allow $1 tun_tap_device_t:chr_file { read write open ioctl getattr create };
-		# dev_filetrans($1, tun_tap_device_t, chr_file, "tailscale0")
-#		allow $1 kmod_exec_t:file { open read execute execute_no_trans map };
-
-#		allow $1 modules_conf_t:dir { getattr read open search };
-#		allow $1 modules_conf_t:file { getattr read open };
-#		allow $1 modules_object_t:dir { search read open };
-#		allow $1 modules_dep_t:file { read open getattr map };
-#
-		# allow $1 self:netlink_route_socket { create bind getattr setopt read write nlmsg_read nlmsg_write };
-# create ioctl read getattr write setattr append bind connect getopt setopt shutdown nlmsg_read nlmsg_write
-#		allow $1 sysctl_net_t:dir { search getattr };
-#		allow $1 sysctl_net_t:file { read open getattr };
-#		allow $1 sysfs_t:file { read open getattr };
-#		allow $1 sysfs_t:lnk_file read;
-#		allow $1 system_dbusd_var_run_t:dir search;
-#
-#		allow $1 system_dbusd_var_run_t:sock_file write;
-
-#		allow $1 system_dbusd_t:unix_stream_socket connectto;
-#		allow $1 system_dbusd_t:dbus send_msg;
-
-#		allow $1 var_lib_t:dir { write add_name create read };
-#		allow $1 var_lib_t:file { getattr read write open };
-
-#		allow $1 var_run_t:dir { add_name write remove_name };
-#		allow $1 var_run_t:sock_file { create setattr unlink };
 ')

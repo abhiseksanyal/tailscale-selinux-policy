@@ -12,14 +12,6 @@ policy_module(tailscaled, 1.0.0)
 gen_require(`
 	type devpts_t;
 	type sshd_key_t;
-    # type system_dbusd_t, root_t, bin_t, var_t, tmp_t, unconfined_t, initrc_t, fs_t, cgroup_t, var_lib_nfs_t, http_port_t, shell_exec_t, syslogd_t, setroubleshootd_t;
-    # These are temporarily defined to allow access to OAS Manager.
-    # Identify a more generic allow policy to get uid for running process.
-    # type chkpwd_t, crond_t, locate_t, logrotate_t, prelink_cron_system_t, prelink_t, readahead_t, sysstat_t, system_cronjob_t, semanage_t, setfiles_t, sshd_t;
-    # type postfix_pickup_t, udev_t, user_tmp_t;
-    # type rhsmcertd_t, systemd_tmpfiles_t, systemd_logind_t;
-    # type rpm_var_lib_t;
-    # role unconfined_r;
 ')
 
 ########################################
@@ -149,11 +141,4 @@ modutils_read_module_config(tailscaled_t)
 modutils_domtrans_kmod(tailscaled_t)
 # Allow tailscaled_t to request the kernel to load a module (tun) - defined in kernel/kernel.if
 kernel_request_load_module(tailscaled_t)
-
-# type=AVC msg=audit(1674306452.044:92911): avc:  denied  { setsched } for  pid=139224 comm="login" scontext=system_u:system_r:tailscaled_t:s0 tcontext=system_u:system_r:tailscaled_t:s0 tclass=process permissive=0
-# type=AVC msg=audit(1674306452.044:92912): avc:  denied  { getattr } for  pid=139224 comm="login" path="/dev/pts/5" dev="devpts" ino=8 scontext=system_u:system_r:tailscaled_t:s0 tcontext=system_u:object_r:devpts_t:s0 tclass=chr_file permissive=0
-# type=AVC msg=audit(1674306452.044:92913): avc:  denied  { write } for  pid=139224 comm="login" name="log" dev="devtmpfs" ino=36531 scontext=system_u:system_r:tailscaled_t:s0 tcontext=system_u:object_r:devlog_t:s0 tclass=sock_file permissive=0
-
-#auth_domtrans_login_program(tailscaled_t, login_exec_t)
-# domtrans_pattern(tailscaled_t, login_exec_t, login_t)
 
