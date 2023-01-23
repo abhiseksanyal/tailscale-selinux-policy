@@ -139,6 +139,17 @@ manage_dirs_pattern(tailscaled_t, tailscale_var_run_t, tailscale_var_run_t)
 manage_sock_files_pattern(tailscaled_t, tailscale_var_run_t, tailscale_var_run_t)
 manage_lnk_files_pattern(tailscaled_t, tailscale_var_run_t, tailscale_var_run_t)
 
+# Allow tailscaled_t to search the contents of kernel module directories
+files_search_kernel_modules(tailscaled_t)
+# Allow tailscaled_t to read dependencies of kernel modules - defined in system/modutils.if
+modutils_read_module_deps_files(tailscaled_t)
+# Allow tailscaled_t to read the configuration options used when loading modules - defined in system/modutils.if
+modutils_read_module_config(tailscaled_t)
+# Allow tailscaled_t to execute insmod in the kmod domain to load a module (tun) - defined in system/modutils.if
+modutils_domtrans_kmod(tailscaled_t)
+# Allow tailscaled_t to request the kernel to load a module (tun) - defined in kernel/kernel.if
+kernel_request_load_module(tailscaled_t)
+
 # type=AVC msg=audit(1674306452.044:92911): avc:  denied  { setsched } for  pid=139224 comm="login" scontext=system_u:system_r:tailscaled_t:s0 tcontext=system_u:system_r:tailscaled_t:s0 tclass=process permissive=0
 # type=AVC msg=audit(1674306452.044:92912): avc:  denied  { getattr } for  pid=139224 comm="login" path="/dev/pts/5" dev="devpts" ino=8 scontext=system_u:system_r:tailscaled_t:s0 tcontext=system_u:object_r:devpts_t:s0 tclass=chr_file permissive=0
 # type=AVC msg=audit(1674306452.044:92913): avc:  denied  { write } for  pid=139224 comm="login" name="log" dev="devtmpfs" ino=36531 scontext=system_u:system_r:tailscaled_t:s0 tcontext=system_u:object_r:devlog_t:s0 tclass=sock_file permissive=0

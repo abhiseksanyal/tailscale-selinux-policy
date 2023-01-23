@@ -33,8 +33,9 @@ interface(`tailscale_network_connection',`
 #			type cert_t;
 			type kernel_t;
 			type tun_tap_device_t;
-			type kmod_exec_t;
-			type modules_dep_t, modules_conf_t, modules_object_t;
+#			type kmod_exec_t;
+
+#			type modules_dep_t, modules_conf_t, modules_object_t;
 			type init_t, init_var_run_t;
 			#type iptables_exec_t;
 			type node_t;
@@ -85,11 +86,13 @@ interface(`tailscale_network_connection',`
 		# allow $1 init_var_run_t:sock_file { all_sock_file_perms };
 		# allow $1 tun_tap_device_t:chr_file { read write open ioctl getattr create };
 		# dev_filetrans($1, tun_tap_device_t, chr_file, "tailscale0")
-		allow $1 kmod_exec_t:file { open read execute execute_no_trans map };
-		allow $1 modules_conf_t:dir { getattr read open search };
-		allow $1 modules_conf_t:file { getattr read open };
-		allow $1 modules_object_t:dir { search read open };
-		allow $1 modules_dep_t:file { read open getattr map };
+#		allow $1 kmod_exec_t:file { open read execute execute_no_trans map };
+
+#		allow $1 modules_conf_t:dir { getattr read open search };
+#		allow $1 modules_conf_t:file { getattr read open };
+#		allow $1 modules_object_t:dir { search read open };
+#		allow $1 modules_dep_t:file { read open getattr map };
+#
 		# allow $1 self:netlink_route_socket { create bind getattr setopt read write nlmsg_read nlmsg_write };
 # create ioctl read getattr write setattr append bind connect getopt setopt shutdown nlmsg_read nlmsg_write
 #		allow $1 sysctl_net_t:dir { search getattr };
