@@ -159,4 +159,6 @@ allow tailscaled_t self:tcp_socket create_stream_socket_perms;
 allow tailscaled_t self:udp_socket create_socket_perms;
 allow tailscaled_t self:unix_dgram_socket create_socket_perms;
 
+# Allow tailscaled_t to make outgoing http connections - defined in kernel/corenetwork.if
+corenet_tcp_connect_http_port(tailscaled_t)
 
